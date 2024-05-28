@@ -31,9 +31,4 @@ public class TrainerScheduleController {
         return ResponseEntity.ok(duration);
     }
 
-    @GetMapping
-    public String hello(){
-        return "hello madafakas";
-    }
-
 }

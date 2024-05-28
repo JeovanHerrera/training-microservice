@@ -22,3 +22,12 @@ eureka:
   instance:
     preferIpAddress: true
 
+gym-crm-system:
+  jwt:
+    secret: "#1234"
+    issuer: gym-crm-system
+    expiration-in-milliseconds: 86400000
+
+cors:
+  origin:
+    url: http://localhost:8080
