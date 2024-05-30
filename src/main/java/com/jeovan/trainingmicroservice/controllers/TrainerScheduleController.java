@@ -16,19 +16,7 @@ public class TrainerScheduleController {
     @PostMapping
     public ResponseEntity<String> scheduleTraining(@RequestBody TrainingDetailsDto trainingDetailsDto){
         trainerScheduleService.modifySchedule(trainingDetailsDto);
+        System.out.println(trainingDetailsDto.getUsername());
         return ResponseEntity.ok("Training updated");
     }
-
-    @GetMapping("/{username}/duration")
-    public ResponseEntity<Double> getTrainerDurationByMonth(@PathVariable String username, @RequestParam String yearMonth) {
-        Double duration = trainerScheduleService.calculateScheduledHoursByMonth(username, yearMonth);
-
-        // if no record found
-        if (duration == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(duration);
-    }
-
 }

@@ -14,7 +14,6 @@ public class JwtDecoder {
     private String secretKey;
 
     public DecodedJWT decode(String token){
-        System.out.println(secretKey);
         return JWT.require(Algorithm.HMAC256(secretKey))
                 .build()
                 .verify(token);

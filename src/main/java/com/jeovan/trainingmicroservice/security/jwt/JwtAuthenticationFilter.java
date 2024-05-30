@@ -31,14 +31,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         extractTokenFromRequest(request)
                 .map(jwtDecoder::decode)
                 .ifPresent(authentication -> SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken("user", "user2", List.of(new SimpleGrantedAuthority("ADMIN")) )));
-        log.info("valid token received");
         filterChain.doFilter(request, response);
     }
 
     private Optional<String> extractTokenFromRequest(HttpServletRequest request){
         String token = request.getHeader(HttpHeaders.AUTHORIZATION);
         if(StringUtils.hasText(token) && token.startsWith(BEARER)){
-            log.info(token);
             return Optional.of(token.substring(7));
         }
         return Optional.empty();
