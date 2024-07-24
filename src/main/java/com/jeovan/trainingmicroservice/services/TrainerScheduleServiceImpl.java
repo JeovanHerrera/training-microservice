@@ -1,5 +1,7 @@
 package com.jeovan.trainingmicroservice.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jeovan.trainingmicroservice.constants.MessagingQueues;
 import com.jeovan.trainingmicroservice.constants.ScheduledTrainingActions;
 import com.jeovan.trainingmicroservice.daos.TrainerScheduleDao;
@@ -7,7 +9,9 @@ import com.jeovan.trainingmicroservice.dtos.TrainerMonthReportDTO;
 import com.jeovan.trainingmicroservice.dtos.TrainingDetailsDto;
 import com.jeovan.trainingmicroservice.models.MonthSummary;
 import com.jeovan.trainingmicroservice.models.TrainerSchedule;
+import io.awspring.cloud.sqs.operations.SqsTemplate;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,9 +22,12 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TrainerScheduleServiceImpl implements TrainerScheduleService{
     private final TrainerScheduleDao trainerScheduleDao;
     private final JmsTemplate jmsTemplate;
+    private final ObjectMapper mapper;
+    private final SqsTemplate sqsTemplate;
     static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM");
 
     @Transactional
@@ -56,12 +63,25 @@ public class TrainerScheduleServiceImpl implements TrainerScheduleService{
            }
         }
 
-        jmsTemplate.convertAndSend(MessagingQueues.SCHEDULED_HOURS_RESULT_QUEUE,
+        try {
+            var message = mapper.writeValueAsString(TrainerMonthReportDTO.builder()
+                    .username(username)
+                    .yearMonth(yearMonth)
+                    .minutes(minutes)
+                    .build());
+            sqsTemplate.send(to -> to.queue(MessagingQueues.SCHEDULED_HOURS_RESULT_QUEUE).payload(message));
+            log.info("Scheduled hours results shared with main microservice successfully for user {} with duration {}", username, minutes);
+        }catch (JsonProcessingException e){
+            log.error("Unable to share scheduled hours results with main microservice");
+        }
+        /*jmsTemplate.convertAndSend(MessagingQueues.SCHEDULED_HOURS_RESULT_QUEUE,
                 TrainerMonthReportDTO.builder()
                         .username(username)
                         .yearMonth(yearMonth)
                         .minutes(minutes)
-                        .build());
+                        .build());*/
+
+
     }
 
     private TrainerSchedule transformDtoToTrainerScheduleModel(TrainingDetailsDto trainingDetailsDto, String yearMonth){

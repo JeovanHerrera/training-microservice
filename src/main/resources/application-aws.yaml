@@ -1,0 +1,16 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/test
+  cloud:
+    aws:
+      region:
+        static: us-east-2
+      credentials:
+        accessKey: ${AWS_ACCESS_KEY_ID:}
+        secretKey: ${AWS_SECRET_ACCESS_KEY:}
+        instanceProfile: false
+      stack:
+        auto: false
+      sqs:
+        endpoint: ${AWS_SQS_ENDPOINT_ID}
